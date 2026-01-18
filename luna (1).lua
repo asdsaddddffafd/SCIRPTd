@@ -4839,4 +4839,3 @@ themeSection:AddList({text = 'Presets', flag = 'preset_theme', values = themeStr
 end
 
 getgenv().library = library
-return library
