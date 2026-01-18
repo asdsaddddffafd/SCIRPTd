@@ -1,3 +1,5 @@
+.github/workflows/discord.yml
+
 local startupArgs = ({...})[1] or {}
 
 if getgenv().library ~= nil then
@@ -4839,3 +4841,4 @@ themeSection:AddList({text = 'Presets', flag = 'preset_theme', values = themeStr
 end
 
 getgenv().library = library
+
