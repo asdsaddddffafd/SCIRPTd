@@ -7172,28 +7172,600 @@ end
 --
 do -- Visuals
 	local VisualsSubSection, VisualsSubSection2, VisualsSubSection3, VisualsSubSection4 = Visuals:SubSection({Name = "Category", Options = {"rbxassetid://18334627891", "rbxassetid://18334630306", "rbxassetid://18334626899", "rbxassetid://18334625304"}})
-	VisualsSubSection2:Section({Side = "Right", Fill = true})
-	VisualsSubSection2:Section({Fill = true})
-	VisualsSubSection4:Section({Side = "Right", Fill = true})
-	VisualsSubSection4:Section({Fill = true})
 
+    -- Load ESP
+loadstring(game:HttpGet("https://raw.githubusercontent.com/j1scxxz-sketch/rfawfawgasewhyasewgtesygdruhdrjhdrgesdfgseghseghrfawfawgasewhyasewgtesygdruhdrjhdrgesdfgseghsegh/refs/heads/main/fgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaafgawesgfuuyafwrbaa"))()
 
-	local PreviewVisualSection = VisualsSubSection:Section({Side = "Right", Size = 150})
-	local PreviewExtraSection1 = VisualsSubSection:Section({Side = "Right", Fill = true})
-	local PreviewExtraSection2 = VisualsSubSection:Section({Fill = true})
-	local Slider1, Slider2 = nil, nil
-	--
-	PreviewVisualSection:Dropdown({Content = {"test2", "Test3"}})
-	PreviewVisualSection:MultiBox({Content = {"test2", "Test3"}})
-	PreviewVisualSection:Toggle({Risky = true, Callback = function(State)
-		if not (Slider1 and Slider2) then return end
-		--
-		Slider1:SetVisible(State)
-		Slider2:SetVisible(State)
-	end})
-	--
-	Slider1 = PreviewVisualSection:Slider({Hidden = true})
-	Slider2 = PreviewVisualSection:Slider({Name = "FOV", Hidden = true, Min = 0, Max = 11, Default = 5, Decimal = 1, Ending = "°", Disable = {"Disabled", 0, 11}})
+-- ESP Sections
+local ESPMainSection = VisualsSubSection4:Section({Name = "esp settings", Fill = true})
+local ESPBarsSection = VisualsSubSection4:Section({Name = "bars & text", Side = "Right", Fill = true})
+
+-- ==================== MAIN ESP SETTINGS ====================
+
+-- Main ESP Toggle with Keybind
+ESPMainSection:Toggle({
+    Name = "enabled",
+    Default = true,
+    Flag = "ESPEnabled",
+    Callback = function(State)
+        if ESP and ESP.Settings then
+            ESP.Settings.Enabled = State
+            -- Hide all ESP elements when disabled
+            if ESP.Holder then
+                ESP.Holder.Enabled = State
+            end
+        end
+    end
+}):Keybind({
+    Default = Enum.KeyCode.F4,
+    Mode = "Toggle",
+    Flag = "ESPKeybind"
+})
+
+-- Local Player Toggle
+ESPMainSection:Toggle({
+    Name = "local player",
+    Default = false,
+    Flag = "ESPLocalPlayer",
+    Callback = function(State)
+        if ESP and ESP.Settings then
+            ESP.Settings.LocalPlayer = State
+        end
+    end
+})
+
+-- Font Dropdown
+ESPMainSection:Dropdown({
+    Name = "font",
+    Content = {"tahoma", "minecraftia", "silkscreen"},
+    Default = "tahoma",
+    Flag = "ESPFont",
+    Callback = function(Value)
+        if ESP and ESP.Settings then
+            -- Convert to proper case for font name
+            local FontMap = {
+                ["tahoma"] = "Tahoma",
+                ["minecraftia"] = "Minecraftia",
+                ["silkscreen"] = "Silkscreen"
+            }
+            local ProperFontName = FontMap[Value:lower()] or "Tahoma"
+            ESP.Settings.Font = ProperFontName
+            if getgenv().Fonts and getgenv().Fonts.Loaded[ProperFontName] then
+                ESP.Font = getgenv().Fonts.Loaded[ProperFontName]
+            end
+        end
+    end
+})
+
+-- Font Type Dropdown
+ESPMainSection:Dropdown({
+    Name = "font type",
+    Content = {"lowercase", "uppercase", "none"},
+    Default = "lowercase",
+    Flag = "ESPFontType",
+    Callback = function(Value)
+        if ESP and ESP.Settings then
+            ESP.Settings.FontType = Value
+        end
+    end
+})
+
+-- Max Distance Slider
+ESPMainSection:Slider({
+    Name = "max distance",
+    Min = 100,
+    Max = 5000,
+    Default = 1000,
+    Decimal = 50,
+    Ending = " studs",
+    Flag = "ESPMaxDistance",
+    Callback = function(Value)
+        if ESP and ESP.Settings then
+            ESP.Settings.MaxDistance = Value
+        end
+    end
+})
+
+-- ==================== BOUNDING BOX ====================
+
+-- Bounding Box Toggle with Color Picker
+local BoxToggle = ESPMainSection:Toggle({
+    Name = "bounding box",
+    Default = true,
+    Flag = "ESPBoundingBox",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox then
+            ESP.Settings.BoundingBox.Enabled = State
+        end
+    end
+})
+
+BoxToggle:ColorPicker({
+    Default = Color3.fromRGB(105, 187, 245),
+    Flag = "ESPBoxColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox then
+            ESP.Settings.BoundingBox.Color = {Color, Color}
+        end
+    end
+})
+
+-- Box Transparency Slider
+ESPMainSection:Slider({
+    Name = "box transparency",
+    Min = 0,
+    Max = 100,
+    Default = 0,
+    Decimal = 1,
+    Ending = "%",
+    Flag = "ESPBoxTransparency",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox then
+            local Trans = Value / 100
+            ESP.Settings.BoundingBox.Transparency = {Trans, Trans}
+        end
+    end
+})
+
+-- Box Glow Toggle with Color Picker
+local GlowToggle = ESPMainSection:Toggle({
+    Name = "box glow",
+    Default = true,
+    Flag = "ESPBoxGlow",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Glow then
+            ESP.Settings.BoundingBox.Glow.Enabled = State
+        end
+    end
+})
+
+GlowToggle:ColorPicker({
+    Default = Color3.fromRGB(105, 187, 245),
+    Flag = "ESPBoxGlowColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Glow then
+            ESP.Settings.BoundingBox.Glow.Color = {Color, Color}
+        end
+    end
+})
+
+-- Box Glow Transparency Slider
+ESPMainSection:Slider({
+    Name = "glow transparency",
+    Min = 0,
+    Max = 100,
+    Default = 75,
+    Decimal = 1,
+    Ending = "%",
+    Flag = "ESPBoxGlowTransparency",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Glow then
+            local Trans = Value / 100
+            ESP.Settings.BoundingBox.Glow.Transparency = {Trans, Trans}
+        end
+    end
+})
+
+-- Box Fill Toggle with Color Picker
+local FillToggle = ESPMainSection:Toggle({
+    Name = "fill",
+    Default = true,
+    Flag = "ESPBoxFill",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Fill then
+            ESP.Settings.BoundingBox.Fill.Enabled = State
+        end
+    end
+})
+
+FillToggle:ColorPicker({
+    Default = Color3.fromRGB(105, 187, 245),
+    Flag = "ESPBoxFillColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Fill then
+            ESP.Settings.BoundingBox.Fill.Color = {Color, Color}
+        end
+    end
+})
+
+-- Fill Rotation Slider
+ESPMainSection:Slider({
+    Name = "fill rotation",
+    Min = 0,
+    Max = 360,
+    Default = 90,
+    Decimal = 1,
+    Ending = "°",
+    Flag = "ESPBoxFillRotation",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Fill then
+            ESP.Settings.BoundingBox.Fill.Rotation = Value
+        end
+    end
+})
+
+-- Fill Transparency Slider
+ESPMainSection:Slider({
+    Name = "fill transparency",
+    Min = 0,
+    Max = 100,
+    Default = 50,
+    Decimal = 1,
+    Ending = "%",
+    Flag = "ESPBoxFillTransparency",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.BoundingBox and ESP.Settings.BoundingBox.Fill then
+            local Trans = Value / 100
+            ESP.Settings.BoundingBox.Fill.Transparency = {1, Trans}
+        end
+    end
+})
+
+-- ==================== HEALTH BAR ====================
+
+-- Health Bar Toggle with 3 Color Pickers
+local HealthBarToggle = ESPBarsSection:Toggle({
+    Name = "health bar",
+    Default = true,
+    Flag = "ESPHealthBar",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar then
+            ESP.Settings.Bars.HealthBar.Enabled = State
+        end
+    end
+})
+
+HealthBarToggle:ColorPicker({
+    Default = Color3.fromRGB(131, 245, 78),
+    Flag = "ESPHealthColor1",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar then
+            ESP.Settings.Bars.HealthBar.Color[1] = Color
+        end
+    end
+})
+
+HealthBarToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 0),
+    Flag = "ESPHealthColor2",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar then
+            ESP.Settings.Bars.HealthBar.Color[2] = Color
+        end
+    end
+})
+
+HealthBarToggle:ColorPicker({
+    Default = Color3.fromRGB(252, 71, 77),
+    Flag = "ESPHealthColor3",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar then
+            ESP.Settings.Bars.HealthBar.Color[3] = Color
+        end
+    end
+})
+
+-- Health Bar Position
+ESPBarsSection:Dropdown({
+    Name = "health position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "left",
+    Flag = "ESPHealthBarPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar then
+            -- Capitalize first letter for ESP settings
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Bars.HealthBar.Position = Capitalized
+        end
+    end
+})
+
+-- Health Text Toggle with Color Picker
+local HealthTextToggle = ESPBarsSection:Toggle({
+    Name = "health text",
+    Default = true,
+    Flag = "ESPHealthText",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar and ESP.Settings.Bars.HealthBar.Text then
+            ESP.Settings.Bars.HealthBar.Text.Enabled = State
+        end
+    end
+})
+
+HealthTextToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPHealthTextColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar and ESP.Settings.Bars.HealthBar.Text then
+            ESP.Settings.Bars.HealthBar.Text.Color = Color
+        end
+    end
+})
+
+-- Health Text Follow Bar
+ESPBarsSection:Toggle({
+    Name = "follow bar",
+    Default = true,
+    Flag = "ESPHealthTextFollowBar",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar and ESP.Settings.Bars.HealthBar.Text then
+            ESP.Settings.Bars.HealthBar.Text.FollowBar = State
+        end
+    end
+})
+
+-- Health Text Position
+ESPBarsSection:Dropdown({
+    Name = "health text position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "left",
+    Flag = "ESPHealthTextPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.HealthBar and ESP.Settings.Bars.HealthBar.Text then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Bars.HealthBar.Text.Position = Capitalized
+        end
+    end
+})
+
+-- ==================== ARMOR BAR ====================
+
+-- Armor Bar Toggle with 3 Color Pickers
+local ArmorBarToggle = ESPBarsSection:Toggle({
+    Name = "armor bar",
+    Default = true,
+    Flag = "ESPArmorBar",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar then
+            ESP.Settings.Bars.ArmorBar.Enabled = State
+        end
+    end
+})
+
+ArmorBarToggle:ColorPicker({
+    Default = Color3.fromRGB(52, 131, 235),
+    Flag = "ESPArmorColor1",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar then
+            ESP.Settings.Bars.ArmorBar.Color[1] = Color
+        end
+    end
+})
+
+ArmorBarToggle:ColorPicker({
+    Default = Color3.fromRGB(52, 131, 235),
+    Flag = "ESPArmorColor2",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar then
+            ESP.Settings.Bars.ArmorBar.Color[2] = Color
+        end
+    end
+})
+
+ArmorBarToggle:ColorPicker({
+    Default = Color3.fromRGB(52, 131, 235),
+    Flag = "ESPArmorColor3",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar then
+            ESP.Settings.Bars.ArmorBar.Color[3] = Color
+        end
+    end
+})
+
+-- Armor Bar Position
+ESPBarsSection:Dropdown({
+    Name = "armor position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "bottom",
+    Flag = "ESPArmorBarPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Bars.ArmorBar.Position = Capitalized
+        end
+    end
+})
+
+-- Armor Text Toggle with Color Picker
+local ArmorTextToggle = ESPBarsSection:Toggle({
+    Name = "armor text",
+    Default = true,
+    Flag = "ESPArmorText",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar and ESP.Settings.Bars.ArmorBar.Text then
+            ESP.Settings.Bars.ArmorBar.Text.Enabled = State
+        end
+    end
+})
+
+ArmorTextToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPArmorTextColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar and ESP.Settings.Bars.ArmorBar.Text then
+            ESP.Settings.Bars.ArmorBar.Text.Color = Color
+        end
+    end
+})
+
+-- Armor Text Follow Bar
+ESPBarsSection:Toggle({
+    Name = "follow bar",
+    Default = true,
+    Flag = "ESPArmorTextFollowBar",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar and ESP.Settings.Bars.ArmorBar.Text then
+            ESP.Settings.Bars.ArmorBar.Text.FollowBar = State
+        end
+    end
+})
+
+-- Armor Text Position
+ESPBarsSection:Dropdown({
+    Name = "armor text position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "left",
+    Flag = "ESPArmorTextPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Bars and ESP.Settings.Bars.ArmorBar and ESP.Settings.Bars.ArmorBar.Text then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Bars.ArmorBar.Text.Position = Capitalized
+        end
+    end
+})
+
+-- ==================== NAME ESP ====================
+
+-- Name Toggle with Color Picker
+local NameToggle = ESPBarsSection:Toggle({
+    Name = "name",
+    Default = true,
+    Flag = "ESPName",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Name then
+            ESP.Settings.Name.Enabled = State
+        end
+    end
+})
+
+NameToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPNameColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Name then
+            ESP.Settings.Name.Color = Color
+        end
+    end
+})
+
+-- Name Position
+ESPBarsSection:Dropdown({
+    Name = "name position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "top",
+    Flag = "ESPNamePosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Name then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Name.Position = Capitalized
+        end
+    end
+})
+
+-- ==================== DISTANCE ESP ====================
+
+-- Distance Toggle with Color Picker
+local DistanceToggle = ESPBarsSection:Toggle({
+    Name = "distance",
+    Default = true,
+    Flag = "ESPDistance",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Distance then
+            ESP.Settings.Distance.Enabled = State
+        end
+    end
+})
+
+DistanceToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPDistanceColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Distance then
+            ESP.Settings.Distance.Color = Color
+        end
+    end
+})
+
+-- Distance Position
+ESPBarsSection:Dropdown({
+    Name = "distance position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "bottom",
+    Flag = "ESPDistancePosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Distance then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Distance.Position = Capitalized
+        end
+    end
+})
+
+-- ==================== WEAPON ESP ====================
+
+-- Weapon Toggle with Color Picker
+local WeaponToggle = ESPBarsSection:Toggle({
+    Name = "weapon",
+    Default = true,
+    Flag = "ESPWeapon",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Weapon then
+            ESP.Settings.Weapon.Enabled = State
+        end
+    end
+})
+
+WeaponToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPWeaponColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Weapon then
+            ESP.Settings.Weapon.Color = Color
+        end
+    end
+})
+
+-- Weapon Position
+ESPBarsSection:Dropdown({
+    Name = "weapon position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "bottom",
+    Flag = "ESPWeaponPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Weapon then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Weapon.Position = Capitalized
+        end
+    end
+})
+
+-- ==================== FLAGS ESP ====================
+
+-- Flags Toggle with Color Picker
+local FlagsToggle = ESPBarsSection:Toggle({
+    Name = "flags",
+    Default = true,
+    Flag = "ESPFlags",
+    Callback = function(State)
+        if ESP and ESP.Settings and ESP.Settings.Flags then
+            ESP.Settings.Flags.Enabled = State
+        end
+    end
+})
+
+FlagsToggle:ColorPicker({
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag = "ESPFlagsColor",
+    Callback = function(Color)
+        if ESP and ESP.Settings and ESP.Settings.Flags then
+            ESP.Settings.Flags.Color = Color
+        end
+    end
+})
+
+-- Flags Position
+ESPBarsSection:Dropdown({
+    Name = "flags position",
+    Content = {"left", "right", "top", "bottom"},
+    Default = "right",
+    Flag = "ESPFlagsPosition",
+    Callback = function(Value)
+        if ESP and ESP.Settings and ESP.Settings.Flags then
+            local Capitalized = Value:sub(1,1):upper() .. Value:sub(2):lower()
+            ESP.Settings.Flags.Position = Capitalized
+        end
+    end
+})
+
 end
 --
 do -- Settings
